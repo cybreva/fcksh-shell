@@ -1,38 +1,52 @@
 #include <iostream>
+#include <string>
+
 #include "lexer.hpp"
+#include "parser.hpp"
+#include "executor.hpp"
+#include "builtin.hpp"
 
 int main() {
 
-    std::string input;
+    while (true) {
 
-    std::cout << "Input: ";
-    std::getline(std::cin, input);
+        std::cout << "fcksh> " << std::flush;
 
-    auto tokens = tokenize(input);
+        std::string input;
 
-    for (const auto& token : tokens) {
-
-        std::cout << "Token: ";
-
-        switch (token.type) {
-
-            case TokenType::Word:
-                std::cout << "WORD";
-                break;
-
-            case TokenType::Pipe:
-                std::cout << "PIPE";
-                break;
-
-            case TokenType::RedirectOutput:
-                std::cout << "REDIRECT_OUTPUT";
-                break;
-
-            case TokenType::RedirectInput:
-                std::cout << "REDIRECT_INPUT";
-                break;
+        if (!std::getline(std::cin, input)) {
+            std::cout << '\n';
+            break;
         }
 
-        std::cout << " -> " << token.value << '\n';
+        if (input.empty()) {
+            continue;
+        }
+
+        try {
+
+            auto tokens = tokenize(input);
+            auto command = parseCommand(tokens);
+
+            if (command.program == "exit") {
+                break;
+            }
+
+            if (isBuiltin(command)) {
+                executeBuiltin(command);
+            }
+            else {
+                executeCommand(command);
+            }
+
+        }
+        catch (const std::exception& e) {
+
+            std::cerr << "fcksh: "
+                      << e.what()
+                      << '\n';
+        }
     }
+
+    return 0;
 }
