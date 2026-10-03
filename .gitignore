@@ -1,3 +1,6 @@
 #binaires
 *.out
 *.exe
+build/
+*.o
+*.out
